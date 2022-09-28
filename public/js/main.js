@@ -6,11 +6,18 @@ import * as ui from "./ui.js";
 import * as recordingUtils from "./recordingUtils.js";
 import * as strangerUtils from "./strangerUtils.js";
 
+const getTurnServerCredentials = async () => {
+  const responseData = await axios.get("/api/get-turn-credentials");
+  webRTCHandler.setTURNServers(responseData.data.token.iceServers);
+};
+
 //initialization of socketIO connection
 const socket = io("/");
 wss.registerSocketEvents(socket);
 
-webRTCHandler.getLocalPreview();
+getTurnServerCredentials().then(() => {
+  webRTCHandler.getLocalPreview();
+});
 
 //registering event listener for personal code copy button
 const personalCodeCopyButton = document.getElementById(
@@ -30,7 +37,6 @@ const personalCodeVideoButton = document.getElementById(
 );
 
 personalCodeChatButton.addEventListener("click", () => {
-  console.log("chat button clicked");
   const calleePersonalCode = document.getElementById(
     "personal_code_input"
   ).value;
@@ -40,7 +46,6 @@ personalCodeChatButton.addEventListener("click", () => {
 });
 
 personalCodeVideoButton.addEventListener("click", () => {
-  console.log("video button clicked");
   const calleePersonalCode = document.getElementById(
     "personal_code_input"
   ).value;
@@ -102,7 +107,6 @@ switchForScreenSharingButton.addEventListener("click", () => {
 // messenger
 const newMessageInput = document.getElementById("new_message_input");
 newMessageInput.addEventListener("keydown", (event) => {
-  console.log("change occured");
   const key = event.key;
 
   if (key === "Enter") {

@@ -10,7 +10,6 @@ export const registerSocketEvents = (socket) => {
   socketIO = socket;
 
   socket.on("connect", () => {
-    console.log("successfully connected to socket.io server");
     store.setSocketId(socket.id);
     ui.updatePersonalCode(socket.id);
   });
@@ -48,7 +47,6 @@ export const registerSocketEvents = (socket) => {
 };
 
 export const sendPreOffer = (data) => {
-  console.log("emitting to server pre-offer event");
   socketIO.emit("pre-offer", data);
 };
 

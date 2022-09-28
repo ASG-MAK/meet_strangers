@@ -6,19 +6,24 @@ import * as store from "./store.js";
 let connectedUserDetails;
 let peerConection;
 let dataChannel;
+let turnServers = [];
+
+export const setTURNServers = (servers) => {
+  turnServers = servers;
+};
 
 const defaultConstraints = {
   audio: true,
   video: true,
 };
 
-const configuration = {
-  iceServers: [
-    {
-      urls: "stun:stun.l.google.com:13902",
-    },
-  ],
-};
+//const configuration = {
+//  iceServers: [
+//    {
+//      urls: "stun:stun.l.google.com:13902",
+//    },
+//  ],
+//};
 
 export const getLocalPreview = () => {
   navigator.mediaDevices
@@ -36,6 +41,11 @@ export const getLocalPreview = () => {
 };
 
 const createPeerConnection = () => {
+  const configuration = {
+    iceServers: [...turnServers, { url: "stun:stun.1und1.de:3478" }],
+    iceTransportPolicy: "relay",
+  };
+
   peerConection = new RTCPeerConnection(configuration);
 
   dataChannel = peerConection.createDataChannel("chat");
@@ -43,9 +53,7 @@ const createPeerConnection = () => {
   peerConection.ondatachannel = (event) => {
     const dataChannel = event.channel;
 
-    dataChannel.onopen = () => {
-      console.log("peer connection is ready to receive data channel messages");
-    };
+    dataChannel.onopen = () => {};
 
     dataChannel.onmessage = (event) => {
       const message = JSON.parse(event.data);

@@ -1,5 +1,6 @@
 const express = require("express");
 const http = require("http");
+const twilio = require("twilio");
 
 const PORT = process.env.PORT || 3000;
 
@@ -13,18 +14,29 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + `/public/index.html`);
 });
 
+app.get("/api/get-turn-credentials", (req, res) => {
+  const accountSid = "AC2543f38278f599c5e055a5a881053b1c";
+  const authToken = "1e81654812185790950eb3e60084dd42";
+  const client = twilio(accountSid, authToken);
+
+  client.tokens
+    .create()
+    .then((token) => res.send({ token }))
+    .catch((err) => {
+      console.log(err);
+      res.send({ message: "failed to fetch TURN credentials", err });
+    });
+});
+
 let connectedPeers = [];
 let connectedPeersStrangers = [];
 
 io.on("connection", (socket) => {
   connectedPeers.push(socket.id);
-  console.log(connectedPeers);
 
   socket.on("pre-offer", (data) => {
-    console.log("pre-offer came");
-    console.log(data);
     const { calleePersonalCode, callType } = data;
-    console.log(calleePersonalCode);
+
     const connectedPeer = connectedPeers.find(
       (peerSocketId) => peerSocketId === calleePersonalCode
     );
@@ -44,9 +56,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("pre-offer-answer", (data) => {
-    console.log("pre offer answer came");
-    console.log(data);
-
     const { callerSocketId } = data;
     const connectedPeer = connectedPeers.find(
       (peerSocketId) => peerSocketId === callerSocketId
@@ -134,6 +143,4 @@ io.on("connection", (socket) => {
   console.log(connectedPeersStrangers);
 });
 
-server.listen(PORT, () => {
-  console.log(`listening on port: ${PORT}`);
-});
+server.listen(PORT, () => {});
